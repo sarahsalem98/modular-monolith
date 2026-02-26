@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --verbosity normal
+
+      - name: Publish
+        run: dotnet publish src/Bootstrapper/Bootstrapper.csproj -c Release -o publish
+
+      - name: Stop IIS Site
+        run: Stop-WebSite -Name 'modular_monolith' -ErrorAction SilentlyContinue
+        shell: powershell
+
+      - name: Deploy to IIS
+        run: |
+          Remove-Item -Path 'C:\inetpub\wwwroot\modular_monolith\*' -Recurse -Force -ErrorAction SilentlyContinue
+          Copy-Item -Path 'publish\*' -Destination 'C:\inetpub\wwwroot\modular_monolith' -Recurse -Force
+        shell: powershell
+
+      - name: Start IIS Site
+        run: Start-WebSite -Name 'modular_monolith'
+        shell: powershell
