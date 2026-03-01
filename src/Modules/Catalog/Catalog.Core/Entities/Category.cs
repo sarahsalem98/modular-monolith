@@ -7,7 +7,7 @@ public class Category : IEntity
     public Guid Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
 
-
+    // EF Core needs a parameterless constructor, but we make it private
     // so nobody outside can create an invalid Category
     private Category() { }
 
