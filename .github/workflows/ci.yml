@@ -28,8 +28,23 @@ jobs:
       - name: Publish
         run: dotnet publish src/Bootstrapper/Bootstrapper.csproj -c Release -o publish
 
+      - name: Stop IIS Site
+        run: |
+          Import-Module WebAdministration
+          Stop-WebAppPool -Name 'modular_test' -ErrorAction SilentlyContinue
+          Stop-Website -Name 'modular_test' -ErrorAction SilentlyContinue
+          Start-Sleep -Seconds 5
+        shell: powershell
+
       - name: Deploy to IIS
         run: |
           Remove-Item -Path 'C:\inetpub\wwwroot\modular_monolith\*' -Recurse -Force -ErrorAction SilentlyContinue
           Copy-Item -Path 'publish\*' -Destination 'C:\inetpub\wwwroot\modular_monolith' -Recurse -Force
+        shell: powershell
+
+      - name: Start IIS Site
+        run: |
+          Import-Module WebAdministration
+          Start-WebAppPool -Name 'modular_test'
+          Start-Website -Name 'modular_test'
         shell: powershell
