@@ -31,14 +31,11 @@ jobs:
       - name: Stop IIS Site
         run: |
           Import-Module WebAdministration
-          Stop-Website -Name 'modular_test' -ErrorAction SilentlyContinue
+          try { Stop-Website -Name 'modular_test' } catch {}
           $pool = (Get-Website -Name 'modular_test').ApplicationPool
-          Stop-WebAppPool -Name $pool -ErrorAction SilentlyContinue
+          try { Stop-WebAppPool -Name $pool } catch {}
           Start-Sleep -Seconds 3
-          # Kill any w3wp process still locking files
-          Get-Process w3wp -ErrorAction SilentlyContinue | Where-Object {
-            $_.Modules.FileName -match 'modular_monolith'
-          } | Stop-Process -Force -ErrorAction SilentlyContinue
+          Get-Process w3wp -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
           Start-Sleep -Seconds 2
         shell: powershell
 
@@ -52,6 +49,6 @@ jobs:
         run: |
           Import-Module WebAdministration
           $pool = (Get-Website -Name 'modular_test').ApplicationPool
-          Start-WebAppPool -Name $pool
-          Start-Website -Name 'modular_test'
+          try { Start-WebAppPool -Name $pool } catch {}
+          try { Start-Website -Name 'modular_test' } catch {}
         shell: powershell
