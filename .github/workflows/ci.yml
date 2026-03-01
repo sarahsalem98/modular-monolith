@@ -41,7 +41,6 @@ jobs:
           } | Stop-Process -Force -ErrorAction SilentlyContinue
           Start-Sleep -Seconds 2
         shell: powershell
-        shell: powershell
 
       - name: Deploy to IIS
         run: |
